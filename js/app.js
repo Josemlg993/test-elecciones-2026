@@ -58,7 +58,8 @@
     favoritos: guardado.favoritos || [],
     videoIndice: -1,
     reproductor: null,
-    intervaloVideo: null
+    intervaloVideo: null,
+    pausaAuto: guardado.pausaAuto !== false
   };
 
   function cargar() {
@@ -71,7 +72,8 @@
         modo: estado.modo, respuestas: estado.respuestas, indice: estado.indice,
         favoritos: estado.favoritos, completado: !!guardado.completado,
         videoId: guardado.videoId, tema: guardado.tema,
-        firmaDatos: CONF.firmaDatos, resultadoTexto: guardado.resultadoTexto || ''
+        firmaDatos: CONF.firmaDatos, resultadoTexto: guardado.resultadoTexto || '',
+        pausaAuto: estado.pausaAuto
       }));
     } catch (e) { /* almacenamiento no disponible: la app sigue funcionando */ }
   }
@@ -138,6 +140,26 @@
   function reloj(seg) {
     seg = Math.max(0, Math.floor(seg || 0));
     return String(Math.floor(seg / 60)).padStart(2, '0') + ':' + String(seg % 60).padStart(2, '0');
+  }
+  function estadoPlayer() {
+    var r = estado.reproductor;
+    if (!r || typeof r.getPlayerState !== 'function') return -1;
+    try { return r.getPlayerState(); } catch (e) { return -1; }
+  }
+  function pausarVideo() {
+    var r = estado.reproductor;
+    if (!estado.pausaAuto || !r || typeof r.pauseVideo !== 'function' || estadoPlayer() === 2) return;
+    try { r.pauseVideo(); } catch (e) {}
+  }
+  function reanudarVideo() {
+    var r = estado.reproductor;
+    if (!r || typeof r.playVideo !== 'function') return;
+    try { r.playVideo(); } catch (e) {}
+  }
+  function pintarTogglePausa() {
+    var b = $('videoPausaAuto');
+    b.textContent = estado.pausaAuto ? '⏸ Pausa al cambiar: sí' : '▶ Pausa al cambiar: no';
+    b.classList.toggle('desactivado', !estado.pausaAuto);
   }
   function pintarVideo() {
     var marco = $('videoMarco');
@@ -225,6 +247,7 @@
     if (idx >= 0 && idx !== estado.videoIndice) {
       estado.videoIndice = idx;
       pintarPropuestaVideo(idx);
+      pausarVideo();
     }
   }
   function pintarPropuestaVideo(idx) {
@@ -244,8 +267,16 @@
       estado.respuestas[id] = b.dataset.resp;
       guardar();
       pintarPropuestaVideo(estado.videoIndice);
+      reanudarVideo();
     });
   });
+  $('videoPausaAuto').addEventListener('click', function () {
+    estado.pausaAuto = !estado.pausaAuto;
+    guardar();
+    pintarTogglePausa();
+    aviso(estado.pausaAuto ? 'Pausa automática activada' : 'Pausa automática desactivada');
+  });
+  pintarTogglePausa();
   $('videoAnterior').addEventListener('click', function () {
     var idx = Math.max(0, estado.videoIndice - 1);
     if (estado.reproductor && propuestas[idx] && propuestas[idx].t != null && estado.reproductor.seekTo) {
@@ -608,6 +639,6 @@
     });
   }
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
-    navigator.serviceWorker.register('sw.js?v=2').catch(function () {});
+    navigator.serviceWorker.register('sw.js?v=3').catch(function () {});
   }
 })();
