@@ -1,0 +1,15 @@
+{
+  "name": "Noticias Ilustradas · Test Elecciones 2026",
+  "short_name": "Test 2026",
+  "description": "Test ilustrado de 100 propuestas para debatir las elecciones de 2026 en España.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f6f1e6",
+  "theme_color": "#b5121b",
+  "lang": "es",
+  "icons": [
+    { "src": "assets/portada.png", "sizes": "any", "type": "image/png", "purpose": "any" }
+  ]
+}
