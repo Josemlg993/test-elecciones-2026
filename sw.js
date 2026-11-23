@@ -1,5 +1,5 @@
 /* Caché offline de la web estática. El vídeo de YouTube no se cachea. */
-var CACHE = 'ni2026-v1';
+var CACHE = 'ni2026-v2';
 var ARCHIVOS = [
   './', './index.html', './css/styles.css', './js/config.js', './js/data.js', './js/app.js',
   './assets/portada.png', './assets/resultados.png', './manifest.webmanifest'
@@ -14,13 +14,12 @@ self.addEventListener('activate', function (e) {
 });
 self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET' || new URL(e.request.url).origin !== location.origin) return;
-  e.respondWith(caches.match(e.request).then(function (r) {
-    return r || fetch(e.request).then(function (resp) {
-      if (resp && resp.status === 200) {
-        var copia = resp.clone();
-        caches.open(CACHE).then(function (c) { c.put(e.request, copia); });
-      }
-      return resp;
-    });
-  }));
+  // Red primero: una publicación nueva se ve en cuanto recargas; la caché es el respaldo offline.
+  e.respondWith(fetch(e.request).then(function (resp) {
+    if (resp && resp.status === 200) {
+      var copia = resp.clone();
+      caches.open(CACHE).then(function (c) { c.put(e.request, copia); });
+    }
+    return resp;
+  }).catch(function () { return caches.match(e.request); }));
 });
