@@ -31,6 +31,12 @@
 
 <main id="contenido">
 
+  <div class="aviso-version" id="avisoVersion" hidden>
+    <strong>Tus respuestas eran del test anterior.</strong>
+    <p>Las 100 propuestas del vídeo son otras, así que los números ya no correspondían. Hemos guardado una copia de tus respuestas antiguas y hemos vaciado solo el test para que puedas volver a responder y ver tu partido correcto.</p>
+    <button class="boton pequeno" id="cerrarAvisoVersion">Entendido</button>
+  </div>
+
   <!-- PORTADA -->
   <section class="pagina activa" id="pagina-inicio">
     <div class="portada">
@@ -57,7 +63,7 @@
     <div class="banda">
       <div><strong>Cómo funciona</strong><p>Responde la propuesta que aparece en el vídeo, en el mismo orden. También puedes hacer el test por libre, entero o en versión exprés de 20 preguntas.</p></div>
       <div><strong>Tu privacidad</strong><p>No pedimos nombre, correo ni registro. Tu progreso y tus favoritos se quedan en este dispositivo.</p></div>
-      <div><strong>Aviso</strong><p>Contenido divulgativo, sin afiliación partidista. La atribución de cada medida se revela en el vídeo; aquí no se desvela para no estropear el experimento.</p></div>
+      <div><strong>Aviso</strong><p>Contenido divulgativo, sin afiliación partidista. La atribución de cada medida es la que muestra el vídeo al final; aquí solo aparece en tu resultado.</p></div>
     </div>
   </section>
 
@@ -156,6 +162,13 @@
         <p id="perfilTexto">—</p>
         <div class="porcentaje"><strong id="porcentajeSi">0 %</strong><span>de acuerdo con lo que has visto</span></div>
       </div>
+    </div>
+    <div class="resultado-partido">
+      <span class="etiqueta">La revelación del vídeo</span>
+      <h3 id="partidoTitulo">—</h3>
+      <p id="partidoTexto">—</p>
+      <div id="barrasPartido"></div>
+      <small>Cuenta solo lo que has respondido. Cada partido tiene 25 propuestas en el vídeo.</small>
     </div>
     <div class="resultado-bloques">
       <h3>Tus prioridades</h3>
