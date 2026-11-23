@@ -59,7 +59,8 @@
     videoIndice: -1,
     reproductor: null,
     intervaloVideo: null,
-    pausaAuto: guardado.pausaAuto !== false
+    pausaAuto: guardado.pausaAuto !== false,
+    pausaEn: -1
   };
 
   function cargar() {
@@ -158,7 +159,7 @@
   }
   function pintarTogglePausa() {
     var b = $('videoPausaAuto');
-    b.textContent = estado.pausaAuto ? '⏸ Pausa al cambiar: sí' : '▶ Pausa al cambiar: no';
+    b.textContent = estado.pausaAuto ? '⏸ Pausa al terminar: sí' : '▶ Pausa al terminar: no';
     b.classList.toggle('desactivado', !estado.pausaAuto);
   }
   function pintarVideo() {
@@ -247,7 +248,15 @@
     if (idx >= 0 && idx !== estado.videoIndice) {
       estado.videoIndice = idx;
       pintarPropuestaVideo(idx);
-      pausarVideo();
+      estado.pausaEn = -1;
+    }
+    if (idx >= 0 && estado.pausaEn !== idx) {
+      var fin = propuestas[idx + 1] && propuestas[idx + 1].t != null
+        ? propuestas[idx + 1].t : CONF.videoFin;
+      if (fin != null && t >= fin - 0.4) {
+        estado.pausaEn = idx;
+        pausarVideo();
+      }
     }
   }
   function pintarPropuestaVideo(idx) {
@@ -639,6 +648,6 @@
     });
   }
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
-    navigator.serviceWorker.register('sw.js?v=3').catch(function () {});
+    navigator.serviceWorker.register('sw.js?v=4').catch(function () {});
   }
 })();
