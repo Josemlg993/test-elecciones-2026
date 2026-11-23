@@ -3,7 +3,7 @@
   var DATA = window.APP_DATA, CONF = window.APP_CONFIG;
   var CLAVE = 'ni-elecciones2026-v1';
   var propuestas = DATA.propuestas.map(function (p, i) {
-    return { id: i + 1, tema: p[0], texto: p[1] };
+    return { id: i + 1, tema: p[0], texto: p[1], t: (p[2] == null ? null : p[2]) };
   });
   var temas = {};
   DATA.temas.forEach(function (t) { temas[t.id] = t; });
@@ -31,7 +31,10 @@
     filtroTema: 'todos',
     busqueda: '',
     soloFav: false,
-    favoritos: guardado.favoritos || []
+    favoritos: guardado.favoritos || [],
+    videoIndice: -1,
+    reproductor: null,
+    intervaloVideo: null
   };
 
   function cargar() {
@@ -78,6 +81,7 @@
     window.scrollTo({ top: 0, behavior: 'auto' });
     if (id === 'resultados' && guardado.completado) pintarResultado();
     if (id === 'propuestas') pintarPropuestas();
+    if (id === 'video') activarVideo();
   }
   Array.prototype.forEach.call(document.querySelectorAll('[data-tab]'), function (b) {
     b.addEventListener('click', function () { mostrar(b.dataset.tab); });
@@ -103,6 +107,13 @@
     if (m) return m[1];
     return /^[\w-]{11}$/.test(s) ? s : '';
   }
+  function videoOficial() {
+    return !CONF.localVideo && !!CONF.videoId && (guardado.videoId || CONF.videoId) === CONF.videoId;
+  }
+  function reloj(seg) {
+    seg = Math.max(0, Math.floor(seg || 0));
+    return String(Math.floor(seg / 60)).padStart(2, '0') + ':' + String(seg % 60).padStart(2, '0');
+  }
   function pintarVideo() {
     var marco = $('videoMarco');
     marco.textContent = '';
@@ -113,6 +124,13 @@
       v.setAttribute('playsinline', '');
       v.src = 'video/video.mp4';
       marco.appendChild(v);
+      $('videoAcomp').hidden = true;
+    } else if (videoOficial()) {
+      var div = document.createElement('div');
+      div.id = 'playerYT';
+      marco.appendChild(div);
+      $('videoAcomp').hidden = false;
+      crearReproductor();
     } else if (id) {
       var f = document.createElement('iframe');
       f.src = 'https://www.youtube-nocookie.com/embed/' + id + '?rel=0';
@@ -121,19 +139,107 @@
       f.setAttribute('allowfullscreen', '');
       f.referrerPolicy = 'strict-origin-when-cross-origin';
       marco.appendChild(f);
+      $('videoAcomp').hidden = true;
     } else {
       var vacio = document.createElement('div');
       vacio.className = 'video-vacio';
-      vacio.innerHTML = '<span class="video-icono" aria-hidden="true">▶</span><strong>Vídeo pendiente de enlazar</strong><p>Pega abajo el enlace de YouTube (o coloca el archivo en <code>web/video/video.mp4</code> antes de compilar la APK).</p>';
+      vacio.innerHTML = '<span class="video-icono" aria-hidden="true">▶</span><strong>Vídeo pendiente de enlazar</strong><p>Pega abajo el enlace de YouTube.</p>';
       marco.appendChild(vacio);
+      $('videoAcomp').hidden = true;
     }
   }
+  function cargarApiYouTube(cb) {
+    if (window.YT && window.YT.Player) { cb(); return; }
+    window.onYouTubeIframeAPIReady = cb;
+    if (document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) return;
+    var s = document.createElement('script');
+    s.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(s);
+  }
+  function crearReproductor() {
+    if (!videoOficial() || !$('playerYT')) return;
+    cargarApiYouTube(function () {
+      if (estado.reproductor || !$('playerYT')) return;
+      estado.reproductor = new window.YT.Player('playerYT', {
+        videoId: CONF.videoId,
+        playerVars: { rel: 0, playsinline: 1 },
+        events: {
+          onReady: function () { activarVideo(); },
+          onError: function () { aviso('No se pudo cargar el vídeo de YouTube'); }
+        }
+      });
+    });
+  }
+  function destruirReproductor() {
+    if (estado.intervaloVideo) { clearInterval(estado.intervaloVideo); estado.intervaloVideo = null; }
+    if (estado.reproductor && estado.reproductor.destroy) {
+      try { estado.reproductor.destroy(); } catch (e) {}
+    }
+    estado.reproductor = null;
+    estado.videoIndice = -1;
+  }
+  function activarVideo() {
+    if (!videoOficial() || !estado.reproductor) return;
+    if (!estado.intervaloVideo) estado.intervaloVideo = setInterval(revisarTiempoVideo, 400);
+    revisarTiempoVideo();
+  }
+  function revisarTiempoVideo() {
+    var r = estado.reproductor;
+    if (!r || typeof r.getCurrentTime !== 'function') return;
+    var t;
+    try { t = r.getCurrentTime(); } catch (e) { return; }
+    if (typeof t !== 'number') return;
+    var idx = -1;
+    for (var i = 0; i < propuestas.length; i++) {
+      var pt = propuestas[i].t;
+      if (pt == null) continue;
+      if (pt <= t) idx = i; else break;
+    }
+    if (t < CONF.videoInicio) idx = -1;
+    if (t > CONF.videoFin) idx = propuestas.length - 1;
+    if (idx >= 0 && idx !== estado.videoIndice) {
+      estado.videoIndice = idx;
+      pintarPropuestaVideo(idx);
+    }
+  }
+  function pintarPropuestaVideo(idx) {
+    var p = propuestas[idx];
+    if (!p) return;
+    $('videoNum').textContent = 'Propuesta ' + p.id + ' de ' + propuestas.length;
+    $('videoTexto').textContent = p.texto;
+    $('videoTiempo').textContent = reloj(p.t);
+    Array.prototype.forEach.call(document.querySelectorAll('#videoAcomp [data-resp]'), function (b) {
+      b.classList.toggle('elegida', estado.respuestas[p.id] === b.dataset.resp);
+    });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('#videoAcomp [data-resp]'), function (b) {
+    b.addEventListener('click', function () {
+      if (estado.videoIndice < 0) return;
+      var id = propuestas[estado.videoIndice].id;
+      estado.respuestas[id] = b.dataset.resp;
+      guardar();
+      pintarPropuestaVideo(estado.videoIndice);
+    });
+  });
+  $('videoAnterior').addEventListener('click', function () {
+    var idx = Math.max(0, estado.videoIndice - 1);
+    if (estado.reproductor && propuestas[idx] && propuestas[idx].t != null && estado.reproductor.seekTo) {
+      estado.reproductor.seekTo(propuestas[idx].t, true);
+    }
+  });
+  $('videoTerminar').addEventListener('click', function () {
+    guardado.completado = true;
+    guardar();
+    $('navResultados').hidden = false;
+    mostrar('resultados');
+  });
   $('videoForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var id = idYoutube($('videoUrl').value);
     if (!id) { aviso('No he reconocido ese enlace de YouTube'); return; }
     guardado.videoId = id;
     guardar();
+    destruirReproductor();
     pintarVideo();
     aviso('Vídeo cargado');
   });
@@ -142,6 +248,7 @@
     CONF.videoId = '';
     $('videoUrl').value = '';
     guardar();
+    destruirReproductor();
     pintarVideo();
   });
   if (guardado.videoId) $('videoUrl').value = guardado.videoId;
@@ -153,7 +260,11 @@
     var ids = [];
     DATA.temas.forEach(function (t) {
       var delTema = propuestas.filter(function (p) { return p.tema === t.id; });
-      ids.push(delTema[1].id, delTema[6].id);
+      if (!delTema.length) return;
+      var a = delTema[Math.min(1, delTema.length - 1)];
+      var b = delTema[Math.min(6, delTema.length - 1)];
+      ids.push(a.id);
+      if (b.id !== a.id) ids.push(b.id);
     });
     return ids;
   }
