@@ -1,7 +1,7 @@
 {
   "name": "Noticias Ilustradas · Test Elecciones 2026",
   "short_name": "Test 2026",
-  "description": "Test ilustrado de 100 propuestas para debatir las elecciones de 2026 en España.",
+  "description": "Compañero del vídeo de NOTICIAS ILUSTRADAS: 100 propuestas electorales sin partido, para responder mientras ves.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
