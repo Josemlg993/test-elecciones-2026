@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#b5121b">
+<meta name="description" content="Especial noticias ilustradas: test de 100 propuestas para debatir las elecciones de 2026 en España. Sin partidos, sin datos personales.">
+<title>Noticias Ilustradas · Test Elecciones 2026</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<a class="salto" href="#contenido">Saltar al contenido</a>
+
+<header class="cabecera">
+  <div class="cabecera-inner">
+    <button class="marca" data-tab="inicio" aria-label="Ir al inicio">
+      <span class="marca-sello">NI</span>
+      <span class="marca-texto"><strong>Noticias Ilustradas</strong><small>Especial elecciones 2026</small></span>
+    </button>
+    <nav class="nav" aria-label="Navegación principal">
+      <button data-tab="inicio" class="activo">Portada</button>
+      <button data-tab="video">Vídeo</button>
+      <button data-tab="test">El test</button>
+      <button data-tab="propuestas">100 propuestas</button>
+      <button data-tab="resultados" id="navResultados" hidden>Mi resultado</button>
+    </nav>
+    <button class="tema-boton" id="temaBoton" aria-label="Cambiar tema claro u oscuro" title="Tema">◐</button>
+  </div>
+</header>
+
+<main id="contenido">
+
+  <!-- PORTADA -->
+  <section class="pagina activa" id="pagina-inicio">
+    <div class="portada">
+      <div class="portada-copy">
+        <p class="kicker"><span class="punto-rojo"></span> Especial · Elecciones 2026</p>
+        <h1>100 propuestas<br><span>para España</span></h1>
+        <p class="entradilla">Un test ilustrado para decir qué te importa y comparar después tus prioridades con las de los demás. Ni partidos, ni trampas: solo ideas para debatir.</p>
+        <div class="acciones">
+          <button class="boton principal" data-tab="test">Hacer el test <span aria-hidden="true">→</span></button>
+          <button class="boton secundario" data-tab="video">Ver el vídeo</button>
+        </div>
+        <div class="cifras">
+          <div><strong>100</strong><span>propuestas</span></div>
+          <div><strong>10</strong><span>bloques</span></div>
+          <div><strong>3</strong><span>respuestas posibles</span></div>
+        </div>
+      </div>
+      <figure class="portada-figura">
+        <img src="assets/portada.png" alt="Ilustración de ciudadanos votando junto a una urna y el mapa de España">
+        <figcaption>ILUSTRACIÓN · LA REDACCIÓN</figcaption>
+      </figure>
+    </div>
+
+    <div class="banda">
+      <div><strong>Cómo funciona</strong><p>Elige si quieres 20 preguntas o las 100. Responde «de acuerdo», «en desacuerdo» o «no lo tengo claro». Al final verás tus prioridades.</p></div>
+      <div><strong>Tu privacidad</strong><p>No pedimos nombre, correo ni registro. Tu progreso y tus favoritos se quedan en este dispositivo.</p></div>
+      <div><strong>Aviso</strong><p>Contenido divulgativo y ficticio. Las propuestas son ejemplos para debatir, no el programa de ningún partido ni un pronóstico electoral.</p></div>
+    </div>
+  </section>
+
+  <!-- VÍDEO -->
+  <section class="pagina" id="pagina-video">
+    <div class="cabecera-seccion">
+      <p class="kicker"><span class="punto-rojo"></span> La pieza</p>
+      <h2>El vídeo</h2>
+      <p class="bajada">Aquí va el vídeo de noticias ilustradas. Si aún no está incrustado, pega el enlace de YouTube y se guardará en este dispositivo.</p>
+    </div>
+    <div class="video-caja">
+      <div id="videoMarco" class="video-marco">
+        <div class="video-vacio" id="videoVacio">
+          <span class="video-icono" aria-hidden="true">▶</span>
+          <strong>Vídeo pendiente de enlazar</strong>
+          <p>Pega abajo el enlace de YouTube (o coloca el archivo en <code>web/video/video.mp4</code> antes de compilar la APK).</p>
+        </div>
+      </div>
+    </div>
+    <form class="video-form" id="videoForm">
+      <label for="videoUrl">Enlace de YouTube o identificador del vídeo</label>
+      <div class="fila-form">
+        <input id="videoUrl" type="text" inputmode="url" placeholder="https://www.youtube.com/watch?v=…" autocomplete="off">
+        <button class="boton principal" type="submit">Cargar</button>
+        <button class="boton secundario" type="button" id="videoQuitar">Quitar</button>
+      </div>
+      <small>Solo se guarda el identificador del vídeo. No se envía a ningún servidor. En la APK hace falta conexión para verlo.</small>
+    </form>
+  </section>
+
+  <!-- TEST -->
+  <section class="pagina" id="pagina-test">
+    <div class="cabecera-seccion">
+      <p class="kicker"><span class="punto-rojo"></span> Participa</p>
+      <h2>El test</h2>
+      <p class="bajada">Lee cada propuesta y elige una respuesta. Puedes volver atrás; nada se envía.</p>
+    </div>
+
+    <div id="testInicio" class="test-panel">
+      <h3>¿Cuántas preguntas?</h3>
+      <div class="modos" role="radiogroup" aria-label="Modo de test">
+        <button class="modo seleccionado" data-modo="rapido" role="radio" aria-checked="true">
+          <strong>Exprés · 20 preguntas</strong><span>Dos por bloque. Unos 3 minutos.</span>
+        </button>
+        <button class="modo" data-modo="completo" role="radio" aria-checked="false">
+          <strong>Completo · 100 preguntas</strong><span>Todas las propuestas. Unos 12 minutos.</span>
+        </button>
+      </div>
+      <button class="boton principal ancho" id="empezarTest">Empezar el test <span aria-hidden="true">→</span></button>
+      <button class="boton texto" id="continuarTest" hidden>Continuar donde lo dejé</button>
+    </div>
+
+    <div id="testJuego" class="test-panel" hidden>
+      <div class="progreso-cabecera">
+        <span id="progresoTexto">Pregunta 1 de 20</span>
+        <span id="progresoBloque">Sanidad</span>
+      </div>
+      <div class="progreso-barra"><div id="progresoRelleno"></div></div>
+      <div class="tarjeta-pregunta">
+        <p class="numero-pregunta" id="numeroPregunta">01 / 20</p>
+        <h3 id="textoPregunta"></h3>
+        <p class="pista">Teclas 1, 2 y 3 para responder · ← para volver</p>
+      </div>
+      <div class="respuestas">
+        <button class="respuesta" data-resp="si"><span class=" tecla">1</span><strong>De acuerdo</strong><small>La apoyaría</small></button>
+        <button class="respuesta" data-resp="no"><span class="tecla">2</span><strong>En desacuerdo</strong><small>No la apoyaría</small></button>
+        <button class="respuesta" data-resp="ns"><span class="tecla">3</span><strong>No lo tengo claro</strong><small>Ni a favor ni en contra</small></button>
+      </div>
+      <button class="boton texto" id="volverPregunta">← Pregunta anterior</button>
+    </div>
+  </section>
+
+  <!-- RESULTADOS -->
+  <section class="pagina" id="pagina-resultados">
+    <div class="cabecera-seccion">
+      <p class="kicker"><span class="punto-rojo"></span> Tu fotografía</p>
+      <h2>Resultado</h2>
+      <p class="bajada" id="resultadoBajada">Así se reparten tus respuestas por bloque temático.</p>
+    </div>
+    <div class="resultado-hero">
+      <img src="assets/resultados.png" alt="Ilustración de resultados con brújula y barras">
+      <div class="resultado-resumen">
+        <span class="etiqueta">Tu perfil</span>
+        <h3 id="perfilTitulo">—</h3>
+        <p id="perfilTexto">—</p>
+        <div class="porcentaje"><strong id="porcentajeSi">0 %</strong><span>de acuerdo con lo que has visto</span></div>
+      </div>
+    </div>
+    <div class="resultado-bloques">
+      <h3>Tus prioridades</h3>
+      <div id="barrasResultado"></div>
+    </div>
+    <div class="resultado-listas">
+      <div>
+        <h3>Te convencen <span aria-hidden="true">✓</span></h3>
+        <ul id="listaSi"></ul>
+      </div>
+      <div>
+        <h3>No te convencen <span aria-hidden="true">✕</span></h3>
+        <ul id="listaNo"></ul>
+      </div>
+    </div>
+    <div class="acciones resultado-acciones">
+      <button class="boton principal" id="compartirResultado">Copiar resultado</button>
+      <button class="boton secundario" data-tab="propuestas">Explorar propuestas</button>
+      <button class="boton texto" id="repetirTest">Hacer otro test</button>
+    </div>
+  </section>
+
+  <!-- PROPUESTAS -->
+  <section class="pagina" id="pagina-propuestas">
+    <div class="cabecera-seccion">
+      <p class="kicker"><span class="punto-rojo"></span> El catálogo</p>
+      <h2>100 propuestas</h2>
+      <p class="bajada">Búscalas, filtra por bloque y guarda tus favoritas con el corazón.</p>
+    </div>
+    <div class="filtros">
+      <input id="buscarPropuestas" type="search" placeholder="Buscar una propuesta…" aria-label="Buscar propuestas">
+      <button class="boton pequeno" id="soloFavoritas">♡ Solo favoritas</button>
+    </div>
+    <div class="chips" id="filtroTemas" aria-label="Filtrar por bloque"></div>
+    <p class="contador" id="contadorPropuestas"></p>
+    <ol class="lista-propuestas" id="listaPropuestas"></ol>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <strong>Noticias Ilustradas · Especial 2026</strong>
+    <p>Test divulgativo, sin afiliación política. No recogemos datos personales: progreso, favoritos y resultado viven solo en tu dispositivo.</p>
+    <button class="boton texto" id="borrarDatos">Borrar mis datos locales</button>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
