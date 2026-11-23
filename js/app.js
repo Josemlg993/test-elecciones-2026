@@ -608,6 +608,6 @@
     });
   }
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
-    navigator.serviceWorker.register('sw.js').catch(function () {});
+    navigator.serviceWorker.register('sw.js?v=2').catch(function () {});
   }
 })();
