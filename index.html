@@ -36,11 +36,11 @@
     <div class="portada">
       <div class="portada-copy">
         <p class="kicker"><span class="punto-rojo"></span> Especial · Elecciones 2026</p>
-        <h1>100 propuestas<br><span>para España</span></h1>
-        <p class="entradilla">Un test ilustrado para decir qué te importa y comparar después tus prioridades con las de los demás. Ni partidos, ni trampas: solo ideas para debatir.</p>
+        <h1>100 propuestas<br><span>sin partido</span></h1>
+        <p class="entradilla">El test del vídeo de NOTICIAS ILUSTRADAS: 100 medidas de los programas electorales presentadas sin decir de quién son. Pon el vídeo, responde sobre la marcha y descubre al final con cuál coincidiste.</p>
         <div class="acciones">
-          <button class="boton principal" data-tab="test">Hacer el test <span aria-hidden="true">→</span></button>
-          <button class="boton secundario" data-tab="video">Ver el vídeo</button>
+          <button class="boton principal" data-tab="video">Ver con el vídeo <span aria-hidden="true">→</span></button>
+          <button class="boton secundario" data-tab="test">Hacer el test</button>
         </div>
         <div class="cifras">
           <div><strong>100</strong><span>propuestas</span></div>
@@ -55,9 +55,9 @@
     </div>
 
     <div class="banda">
-      <div><strong>Cómo funciona</strong><p>Elige si quieres 20 preguntas o las 100. Responde «de acuerdo», «en desacuerdo» o «no lo tengo claro». Al final verás tus prioridades.</p></div>
+      <div><strong>Cómo funciona</strong><p>Responde la propuesta que aparece en el vídeo, en el mismo orden. También puedes hacer el test por libre, entero o en versión exprés de 20 preguntas.</p></div>
       <div><strong>Tu privacidad</strong><p>No pedimos nombre, correo ni registro. Tu progreso y tus favoritos se quedan en este dispositivo.</p></div>
-      <div><strong>Aviso</strong><p>Contenido divulgativo y ficticio. Las propuestas son ejemplos para debatir, no el programa de ningún partido ni un pronóstico electoral.</p></div>
+      <div><strong>Aviso</strong><p>Contenido divulgativo, sin afiliación partidista. La atribución de cada medida se revela en el vídeo; aquí no se desvela para no estropear el experimento.</p></div>
     </div>
   </section>
 
@@ -66,25 +66,36 @@
     <div class="cabecera-seccion">
       <p class="kicker"><span class="punto-rojo"></span> La pieza</p>
       <h2>El vídeo</h2>
-      <p class="bajada">Aquí va el vídeo de noticias ilustradas. Si aún no está incrustado, pega el enlace de YouTube y se guardará en este dispositivo.</p>
+      <p class="bajada">El vídeo original de NOTICIAS ILUSTRADAS, con las 100 propuestas en su orden. La casilla de abajo va cambiando sola: responde cada medida mientras la ves.</p>
     </div>
     <div class="video-caja">
-      <div id="videoMarco" class="video-marco">
-        <div class="video-vacio" id="videoVacio">
-          <span class="video-icono" aria-hidden="true">▶</span>
-          <strong>Vídeo pendiente de enlazar</strong>
-          <p>Pega abajo el enlace de YouTube (o coloca el archivo en <code>web/video/video.mp4</code> antes de compilar la APK).</p>
-        </div>
+      <div id="videoMarco" class="video-marco"></div>
+    </div>
+    <div class="video-acomp" id="videoAcomp" hidden>
+      <div class="video-acomp-cab">
+        <strong id="videoNum">Propuesta 1 de 100</strong>
+        <span id="videoTiempo">00:10</span>
       </div>
+      <h3 id="videoTexto"></h3>
+      <div class="respuestas compactas">
+        <button data-resp="si"><span class="tecla">1</span> De acuerdo</button>
+        <button data-resp="no"><span class="tecla">2</span> En desacuerdo</button>
+        <button data-resp="ns"><span class="tecla">3</span> No lo tengo claro</button>
+      </div>
+      <div class="video-acomp-acciones">
+        <button class="boton texto" id="videoAnterior">← Anterior</button>
+        <button class="boton pequeno" id="videoTerminar">Ver mi resultado</button>
+      </div>
+      <p class="pista">Tus respuestas se guardan igual que en el test. El vídeo revela al final a qué partido pertenece cada medida.</p>
     </div>
     <form class="video-form" id="videoForm">
-      <label for="videoUrl">Enlace de YouTube o identificador del vídeo</label>
+      <label for="videoUrl">Cambiar vídeo (enlace de YouTube o identificador)</label>
       <div class="fila-form">
         <input id="videoUrl" type="text" inputmode="url" placeholder="https://www.youtube.com/watch?v=…" autocomplete="off">
         <button class="boton principal" type="submit">Cargar</button>
         <button class="boton secundario" type="button" id="videoQuitar">Quitar</button>
       </div>
-      <small>Solo se guarda el identificador del vídeo. No se envía a ningún servidor. En la APK hace falta conexión para verlo.</small>
+      <small>Con otro vídeo no hay sincronización: las respuestas se toman desde el test. Hace falta conexión para verlo.</small>
     </form>
   </section>
 
