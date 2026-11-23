@@ -1,5 +1,5 @@
 /* Caché offline de la web estática. El vídeo de YouTube no se cachea. */
-var CACHE = 'ni2026-v3';
+var CACHE = 'ni2026-v4';
 var ARCHIVOS = [
   './', './index.html', './css/styles.css', './js/config.js', './js/data.js', './js/app.js',
   './assets/portada.png', './assets/resultados.png', './manifest.webmanifest'
