@@ -2,8 +2,14 @@
   'use strict';
   var DATA = window.APP_DATA, CONF = window.APP_CONFIG;
   var CLAVE = 'ni-elecciones2026-v1';
+  var partidos = {
+    pp:   { nombre: 'PP',            completo: 'Partido Popular',   color: '#1d5aa8' },
+    psoe: { nombre: 'PSOE',          completo: 'Partido Socialista', color: '#d0021b' },
+    vox:  { nombre: 'VOX',           completo: 'VOX',               color: '#178a3a' },
+    fa:   { nombre: 'Frente Amplio', completo: 'Frente Amplio',     color: '#7b2d8e' }
+  };
   var propuestas = DATA.propuestas.map(function (p, i) {
-    return { id: i + 1, tema: p[0], texto: p[1], t: (p[2] == null ? null : p[2]) };
+    return { id: i + 1, tema: p[0], texto: p[1], t: (p[2] == null ? null : p[2]), partido: p[3] || null };
   });
   var temas = {};
   DATA.temas.forEach(function (t) { temas[t.id] = t; });
@@ -22,6 +28,24 @@
   };
 
   var guardado = cargar();
+
+  /* Si las propuestas han cambiado, los números de respuestas ya no significan lo mismo.
+     Se guarda una copia de las respuestas antiguas y se limpian solo esas. */
+  var respuestaAntigua = Object.keys(guardado.respuestas || {}).length > 0;
+  if (respuestaAntigua && guardado.firmaDatos !== CONF.firmaDatos) {
+    try {
+      localStorage.setItem(CLAVE + '-respuestas-antiguas', JSON.stringify(guardado.respuestas));
+      localStorage.setItem(CLAVE + '-resultado-antiguo', JSON.stringify({
+        resultadoTexto: guardado.resultadoTexto || '', tema: guardado.tema || ''
+      }));
+    } catch (e) { /* sin almacenamiento: seguimos con la copia en memoria */ }
+    guardado.respuestas = {};
+    guardado.completado = false;
+    guardado.firmaDatos = CONF.firmaDatos;
+    guardado.migrado = true;
+    try { localStorage.setItem(CLAVE, JSON.stringify(guardado)); } catch (e) {}
+  }
+
   var estado = {
     pagina: 'inicio',
     modo: guardado.modo || 'rapido',
@@ -46,7 +70,8 @@
       localStorage.setItem(CLAVE, JSON.stringify({
         modo: estado.modo, respuestas: estado.respuestas, indice: estado.indice,
         favoritos: estado.favoritos, completado: !!guardado.completado,
-        videoId: guardado.videoId, tema: guardado.tema
+        videoId: guardado.videoId, tema: guardado.tema,
+        firmaDatos: CONF.firmaDatos, resultadoTexto: guardado.resultadoTexto || ''
       }));
     } catch (e) { /* almacenamiento no disponible: la app sigue funcionando */ }
   }
@@ -368,7 +393,7 @@
     var totalSiNo = si + no;
     var pct = totalSiNo ? Math.round(si / totalSiNo * 100) : 0;
     $('porcentajeSi').textContent = pct + ' %';
-    $('resultadoBajada').textContent = 'Has respondido ' + Object.keys(estado.respuestas).length + ' propuestas (' + ns + ' sin decidirte). Esto no es un resultado político: es un espejo de lo que te importa.';
+    $('resultadoBajada').textContent = 'Has respondido ' + Object.keys(estado.respuestas).length + ' propuestas (' + ns + ' sin decidirte). Abajo está la atribución del vídeo: con qué partido has coincidido más.';
 
     var orden = DATA.temas.slice().map(function (t) {
       var c = porTema[t.id], n = c.si + c.no;
@@ -379,6 +404,60 @@
     $('perfilTexto').textContent = conDatos.length
       ? perfiles[conDatos[0].t.id] + (conDatos[1] ? ' También te mueve ' + conDatos[1].t.nombre.toLowerCase() + '.' : '')
       : 'Responde alguna propuesta para ver tu fotografía.';
+
+    /* Afinidad partidista: solo cuenta lo que has respondido; cada partido tiene 25 propuestas. */
+    var porPartido = {};
+    Object.keys(partidos).forEach(function (k) { porPartido[k] = { si: 0, no: 0, ns: 0 }; });
+    Object.keys(estado.respuestas).forEach(function (k) {
+      var p = propuestas[Number(k) - 1];
+      if (!p || !porPartido[p.partido]) return;
+      var r = estado.respuestas[k];
+      if (r === 'si') porPartido[p.partido].si++;
+      else if (r === 'no') porPartido[p.partido].no++;
+      else porPartido[p.partido].ns++;
+    });
+    var ordenPartidos = Object.keys(partidos).map(function (k) {
+      var c = porPartido[k], total = c.si + c.no + c.ns;
+      return { id: k, datos: partidos[k], c: c, total: total, pct: total ? Math.round(c.si / total * 100) : -1 };
+    }).sort(function (a, b) { return b.c.si - a.c.si || b.pct - a.pct; });
+    var ganador = ordenPartidos[0];
+    var empatados = ordenPartidos.filter(function (o) { return o.c.si === ganador.c.si; });
+    var respondidas = Object.keys(estado.respuestas).length;
+    var nombreGanador = '';
+    if (!respondidas || ganador.c.si === 0) {
+      $('partidoTitulo').textContent = respondidas ? 'Sin coincidencias claras' : 'Aún sin datos';
+      $('partidoTexto').textContent = respondidas
+        ? 'No has marcado ninguna propuesta como «de acuerdo». Responde más para ver con qué partido coincides.'
+        : 'Responde el vídeo o el test para descubrir con qué partido has coincidido más.';
+    } else {
+      nombreGanador = empatados.length > 1
+        ? empatados.map(function (o) { return o.datos.nombre; }).join(' y ')
+        : ganador.datos.nombre;
+      $('partidoTitulo').textContent = 'Tu partido: ' + nombreGanador;
+      $('partidoTexto').textContent = 'Coincides con ' + ganador.c.si + ' de las ' + ganador.total +
+        ' propuestas del ' + ganador.datos.completo + ' que has respondido' +
+        (ganador.total < 25 ? ' (de sus 25 en el vídeo)' : '') + '.' +
+        (empatados.length > 1 ? ' Has empatado con ' + empatados[empatados.length - 1].datos.nombre + '.' : '');
+    }
+    var cajaPartidos = $('barrasPartido');
+    cajaPartidos.textContent = '';
+    ordenPartidos.forEach(function (o) {
+      var fila = document.createElement('div');
+      fila.className = 'fila-barra';
+      var nombre = document.createElement('span');
+      nombre.textContent = o.datos.nombre;
+      var fondo = document.createElement('div');
+      fondo.className = 'barra-fondo';
+      var relleno = document.createElement('div');
+      relleno.className = 'barra-relleno';
+      relleno.style.background = o.datos.color;
+      relleno.style.width = (o.pct < 0 ? 0 : o.pct) + '%';
+      fondo.appendChild(relleno);
+      var valor = document.createElement('b');
+      valor.textContent = o.c.si + '/' + (o.total || 25) + (o.pct < 0 ? '' : ' · ' + o.pct + '%');
+      fila.appendChild(nombre); fila.appendChild(fondo); fila.appendChild(valor);
+      cajaPartidos.appendChild(fila);
+    });
 
     var caja = $('barrasResultado');
     caja.textContent = '';
@@ -415,8 +494,9 @@
         lista.appendChild(li);
       });
     });
-    guardado.resultadoTexto = 'Mi test de 100 propuestas para España: ' + pct + '% de acuerdo. Mis prioridades: ' +
-      conDatos.slice(0, 3).map(function (o) { return o.t.nombre; }).join(', ') + '. ' +
+    guardado.resultadoTexto = 'Mi test de 100 propuestas para España: ' + pct + '% de acuerdo.' +
+      (nombreGanador ? ' Mi partido: ' + nombreGanador + '.' : '') +
+      ' Mis prioridades: ' + conDatos.slice(0, 3).map(function (o) { return o.t.nombre; }).join(', ') + '. ' +
       (CONF.urlPublica || location.href.split('#')[0]);
   }
   $('compartirResultado').addEventListener('click', function () {
@@ -505,6 +585,8 @@
   $('borrarDatos').addEventListener('click', function () {
     if (!window.confirm('Se borrarán tus respuestas, favoritos, resultado y vídeo guardado. ¿Continuar?')) return;
     localStorage.removeItem(CLAVE);
+    localStorage.removeItem(CLAVE + '-respuestas-antiguas');
+    localStorage.removeItem(CLAVE + '-resultado-antiguo');
     guardado = {};
     estado.respuestas = {}; estado.favoritos = []; estado.indice = 0;
     $('navResultados').hidden = true;
@@ -517,6 +599,14 @@
   });
 
   if (guardado.completado) $('navResultados').hidden = false;
+  if (guardado.migrado) {
+    $('avisoVersion').hidden = false;
+    $('cerrarAvisoVersion').addEventListener('click', function () {
+      $('avisoVersion').hidden = true;
+      delete guardado.migrado;
+      guardar();
+    });
+  }
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
     navigator.serviceWorker.register('sw.js').catch(function () {});
   }
